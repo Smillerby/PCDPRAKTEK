@@ -1,0 +1,49 @@
+import streamlit as st
+import numpy as np
+import tensorflow as tf
+from PIL import Image
+import os
+
+# Memuat model yang sudah dilatih
+model_path = 'C:/Users/Irpan/Documents/PCD-IRPAN/DATASET/hasil/model_6class.keras'
+
+# Periksa apakah file model ada
+if not os.path.exists(model_path):
+    st.error(f"Model tidak ditemukan di {model_path}")
+else:
+    model = tf.keras.models.load_model(model_path, compile=False)
+
+    # Memuat nama kelas dari model (disesuaikan dengan jumlah kelas model)
+    classes = ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6'] 
+
+    # Fungsi untuk memproses gambar input
+    def preprocess_image(img):
+        img = img.resize((224, 224))  # Mengubah ukuran gambar sesuai input model
+        img_array = np.array(img) / 255.0  # Normalisasi gambar
+        img_array = np.expand_dims(img_array, axis=0)  # Menambah dimensi batch
+        return img_array
+
+    # Fungsi untuk memprediksi gambar
+    def predict_image(img_array):
+        preds = model.predict(img_array)  # Prediksi menggunakan model
+        class_idx = np.argmax(preds, axis=1)  # Menentukan kelas dengan probabilitas tertinggi
+        return classes[class_idx[0]], preds[0][class_idx[0]]  # Mengembalikan kelas dan probabilitas
+
+    # Streamlit interface
+    st.title("Elah PCD")
+    
+    # Menggunakan kamera untuk input gambar
+    camera_input = st.camera_input("Ambil gambar untuk diprediksi")
+
+    if camera_input is not None:
+        # Menampilkan gambar yang diambil
+        st.image(camera_input, caption="Gambar yang diambil.", use_container_width=True)
+
+        # Memproses gambar
+        img = Image.open(camera_input)
+        img_array = preprocess_image(img)
+
+        # Prediksi
+        label, confidence = predict_image(img_array)
+        st.write(f"Prediksi: {label}")
+        st.write(f"Probabilitas: {confidence:.2f}")
