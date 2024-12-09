@@ -9,7 +9,7 @@ import io
 menu = st.sidebar.radio("Pilih Halaman", ["Beranda", "Kamera", "Riwayat"])
 
 # Memuat model yang sudah dilatih
-model_path = 'C:/Users/Irpan/Documents/PCD-IRPAN/DATASET/hasil/model_6class.h5'
+model_path = 'model_6class.h5'
 if not os.path.exists(model_path):
     st.error(f"Model tidak ditemukan di {model_path}")
 else:
