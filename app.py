@@ -54,8 +54,7 @@ else:
 
             # Memproses gambar
             try:
-                # Pastikan gambar dibaca dari byte stream menggunakan io.BytesIO
-                img = Image.open(io.BytesIO(camera_input))
+                img = Image.open(camera_input)
             except Exception as e:
                 st.error(f"Terjadi kesalahan saat memproses gambar: {e}")
                 st.stop()  # Berhenti jika ada kesalahan dalam memproses gambar
