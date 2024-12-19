@@ -6,7 +6,7 @@ import os
 import io
 
 # Sidebar untuk memilih halaman
-menu = st.sidebar.radio("Pilih Halaman", ["Beranda", "Kamera", "Riwayat"])
+menu = st.sidebar.radio("Pilih Halaman", ["Beranda", "Kamera", "Unggah Gambar", "Riwayat"])
 
 # Memuat model yang sudah dilatih
 model_path = 'DATASET/hasil/model_6class.h5'
@@ -37,11 +37,12 @@ else:
 
     # Header dengan gambar dan deskripsi
     st.image("cnn.png", width=150)
-    st.title("Deteksi Penyakit pada daun kentang")
+    st.title("Deteksi Penyakit pada Daun Kentang")
 
     if menu == "Beranda":
         st.markdown("""
-        CNN (Convolutional Neural Network) adalah jenis arsitektur jaringan saraf buatan yang dirancang khusus untuk pemrosesan data spasial, seperti gambar atau video, meskipun juga dapat digunakan untuk data sekuensial. CNN sangat populer dalam bidang Computer Vision dan tugas-tugas yang melibatkan pengenalan pola dalam data yang memiliki hubungan spasial, termasuk analisis gambar untuk mendeteksi dan mengidentifikasi penyakit pada daun kentang.
+        Aplikasi klasifikasi penyakit pada daun kentang adalah sebuah solusi teknologi cerdas yang dirancang untuk membantu petani, peneliti, dan praktisi pertanian dalam mendeteksi dan menganalisis masalah kesehatan tanaman kentang secara cepat dan akurat. Aplikasi ini memanfaatkan teknologi kecerdasan buatan (AI) dan pembelajaran mesin (Machine Learning) untuk mengidentifikasi jenis penyakit berdasarkan gambar daun kentang yang diunggah oleh pengguna.
+Dengan antarmuka yang ramah pengguna, aplikasi ini memungkinkan siapa saja, termasuk petani tanpa keahlian teknis, untuk mengambil foto daun kentang yang terinfeksi menggunakan kamera smartphone. Setelah gambar diunggah, aplikasi secara otomatis menganalisis pola, warna, dan tekstur pada daun untuk menentukan penyakit seperti hawar daun (Late Blight), bercak daun (Early Blight), dan Daun Sehat (Healthy).
         """, unsafe_allow_html=True)
 
     elif menu == "Kamera":
@@ -55,6 +56,38 @@ else:
             # Memproses gambar
             try:
                 img = Image.open(camera_input)
+            except Exception as e:
+                st.error(f"Terjadi kesalahan saat memproses gambar: {e}")
+                st.stop()  # Berhenti jika ada kesalahan dalam memproses gambar
+
+            img_array = preprocess_image(img)
+
+            # Prediksi
+            label, confidence = predict_image(img_array)
+            st.write(f"Prediksi: {label}")
+            st.write(f"Probabilitas: {confidence:.2f}")
+
+            # Menyimpan gambar dan hasil prediksi ke riwayat
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format="PNG")
+            img_bytes = img_bytes.getvalue()
+            st.session_state.history.append({
+                "image": img_bytes,
+                "label": label,
+                "confidence": confidence
+            })
+
+    elif menu == "Unggah Gambar":
+        # Menampilkan fitur unggah gambar
+        uploaded_file = st.file_uploader("Pilih gambar untuk diprediksi", type=["jpg", "jpeg", "png"])
+
+        if uploaded_file is not None:
+            # Menampilkan gambar yang diunggah
+            st.image(uploaded_file, caption="Gambar yang diunggah.", use_container_width=True)
+
+            # Memproses gambar
+            try:
+                img = Image.open(uploaded_file)
             except Exception as e:
                 st.error(f"Terjadi kesalahan saat memproses gambar: {e}")
                 st.stop()  # Berhenti jika ada kesalahan dalam memproses gambar
@@ -94,7 +127,7 @@ else:
                 if st.button(f"Hapus Prediksi {i+1}", key=f"hapus_{i}"):
                     # Menghapus entri dari riwayat
                     st.session_state.history.pop(i)
-                    
+                
                 st.markdown("---")
 
 # Menambahkan CSS kustom untuk mempercantik tampilan
