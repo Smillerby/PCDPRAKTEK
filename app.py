@@ -9,7 +9,7 @@ import io
 menu = st.sidebar.radio("Pilih Halaman", ["Beranda", "Kamera", "Riwayat"])
 
 # Memuat model yang sudah dilatih
-model_path = 'DATASET/hasil/model_6class.h5'
+model_path = 'C:/Users/Irpan/Documents/PCD-IRPAN/DATASET/hasil/model_6class.h5'
 if not os.path.exists(model_path):
     st.error(f"Model tidak ditemukan di {model_path}")
 else:
@@ -21,7 +21,7 @@ else:
     # Fungsi untuk memproses gambar input
     def preprocess_image(img):
         img = img.resize((224, 224))  # Mengubah ukuran gambar sesuai input model
-        img_array = np.array(img) / 255.0  # Normalisasi gambar
+        img_array = np.array(img) / 255.0  # Normalisasi gambar (pastikan sesuai dengan preprocessing model)
         img_array = np.expand_dims(img_array, axis=0)  # Menambah dimensi batch
         return img_array
 
@@ -36,13 +36,12 @@ else:
         st.session_state.history = []
 
     # Header dengan gambar dan deskripsi
-    st.image("https://example.com/path_to_header_image.jpg", use_container_width=True)  # Ganti dengan URL gambar header yang sesuai
-    st.title("Deteksi Penyakit Tanaman dengan AI")
+    st.image("cnn.png", width=150)
+    st.title("Deteksi Penyakit pada daun kentang")
 
     if menu == "Beranda":
         st.markdown("""
-        Aplikasi ini menggunakan model **TensorFlow** untuk mendeteksi penyakit pada tanaman kentang.
-        Gunakan menu Kamera untuk mengambil gambar daun tanaman dan memprediksi penyakit yang ada.
+        CNN (Convolutional Neural Network) adalah jenis arsitektur jaringan saraf buatan yang dirancang khusus untuk pemrosesan data spasial, seperti gambar atau video, meskipun juga dapat digunakan untuk data sekuensial. CNN sangat populer dalam bidang Computer Vision dan tugas-tugas yang melibatkan pengenalan pola dalam data yang memiliki hubungan spasial, termasuk analisis gambar untuk mendeteksi dan mengidentifikasi penyakit pada daun kentang.
         """, unsafe_allow_html=True)
 
     elif menu == "Kamera":
@@ -54,7 +53,12 @@ else:
             st.image(camera_input, caption="Gambar yang diambil.", use_container_width=True)
 
             # Memproses gambar
-            img = Image.open(camera_input)
+            try:
+                img = Image.open(camera_input)
+            except Exception as e:
+                st.error(f"Terjadi kesalahan saat memproses gambar: {e}")
+                st.stop()  # Berhenti jika ada kesalahan dalam memproses gambar
+
             img_array = preprocess_image(img)
 
             # Prediksi
@@ -90,7 +94,7 @@ else:
                 if st.button(f"Hapus Prediksi {i+1}", key=f"hapus_{i}"):
                     # Menghapus entri dari riwayat
                     st.session_state.history.pop(i)
-                    st.rerun()  # Me-refresh halaman setelah penghapusan
+                    st.experimental_rerun()  # Me-refresh halaman setelah penghapusan
                 st.markdown("---")
 
 # Menambahkan CSS kustom untuk mempercantik tampilan
